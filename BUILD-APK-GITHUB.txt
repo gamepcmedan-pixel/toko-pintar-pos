@@ -1,0 +1,40 @@
+TOKO PINTAR POS NATIVE V2.0 — CARA BUILD APK ASLI TANPA ANDROID STUDIO
+
+PENTING: Isi ZIP ini adalah SOURCE CODE dan workflow build, BUKAN file APK.
+Aplikasi belum dikompilasi atau diuji pada perangkat Android. Proyek ini tidak
+mengandung modifikasi manual classes.dex dari APK bermasalah sebelumnya.
+
+CARA A: BUILD GRATIS VIA GITHUB ACTIONS (di PC Windows)
+1. Buka https://github.com/new dan login GitHub.
+2. Buat repository baru, misalnya toko-pintar-pos. Repository boleh Private.
+3. Ekstrak ZIP ini ke satu folder.
+4. Di halaman repository klik 'Add file' > 'Upload files'.
+5. Unggah SEMUA ISI folder hasil ekstrak, dengan struktur di ROOT repository:
+     .github/workflows/build-apk.yml
+     app/build.gradle
+     app/src/main/AndroidManifest.xml
+     app/src/main/java/... (7 file Java)
+     build.gradle
+     settings.gradle
+     gradle.properties
+   Catatan: GitHub web upload file bisa kurang praktis untuk folder bertingkat.
+   Cara yang lebih mudah: gunakan GitHub Desktop atau Git untuk mengunggah folder.
+6. Setelah file berhasil di-commit ke branch 'main', buka tab Actions.
+7. Klik workflow 'Build APK Android Resmi'. Jika perlu aktifkan Actions.
+8. Klik 'Run workflow' > 'Run workflow', atau tunggu build otomatis saat push.
+9. Tunggu job Android berstatus sukses (centang hijau).
+10. Buka run > Artifacts > 'Toko-Pintar-Native-APK'.
+11. Ekstrak unduhan. APK bernama 'app-debug.apk' dan siap diuji.
+
+CARA B: BUILD DI PC WINDOWS
+1. Instal Android Studio dari https://developer.android.com/studio
+2. Buka SDK Manager > Android 15 (API 35) / Build Tools 35.0.0.
+3. Jalankan BUILD-APK-WINDOWS.bat. Skrip akan mencoba menyiapkan Gradle 8.9
+   dan memanggil proses build Android Gradle Plugin resmi.
+4. Hasilnya: app/build/outputs/apk/debug/app-debug.apk
+
+PERINGATAN
+- Jika build gagal, lihat log pada tab Actions; jangan instal APK lama yang crash.
+- APK debug hanya untuk pengujian; untuk produksi perlu release signing.
+- Foto stok mencocokkan foto produk yang sudah didaftarkan, bukan AI universal.
+- Printer thermal menggunakan protokol ESC/POS Bluetooth Classic atau TCP Wi-Fi.

@@ -1,0 +1,10 @@
+STATUS PEMERIKSAAN INTERNAL (18 Nov 2026)
+- [OK] Seluruh file Java di-parse dan dikompilasi terhadap stub API Android
+       yang mensimulasikan nama kelas/metode Android (BUKAN Android SDK).
+- [OK] Unit smoke test: formatter struk 58mm, total, kembali, ESC/POS.
+- [OK] AndroidManifest.xml dan styles.xml valid secara XML.
+- [OK] Semua file proyek asli berasal dari kode baru, tanpa DEX yang diubah.
+- [BELUM] Android Gradle Plugin/SDK tidak tersedia dalam lingkungan ini.
+- [BELUM] Tidak ada emulator atau HP Android untuk uji instalasi.
+- [BELUM] Tidak ada printer thermal fisik untuk menguji driver ESC/POS.
+Jangan menganggap proyek ini sudah terbukti berhasil build/install pada HP.
