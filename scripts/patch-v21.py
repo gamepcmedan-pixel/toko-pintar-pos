@@ -25,13 +25,13 @@ change(GRADLE, "applicationId 'com.tokopintar.nativepos'", "applicationId 'com.t
 change(GRADLE, "versionCode 1", "versionCode 2")
 change(GRADLE, "versionName '2.0.0'", "versionName '2.1.0'")
 
-change(PRINTER, "BluetoothDevice d=a.getRemoteDevice(mac);a.cancelDiscovery();", """
-        BluetoothDevice d=a.getRemoteDevice(mac);
-        // Android 12+ requires BLUETOOTH_SCAN to call cancelDiscovery().
-        // The discovery cancellation is optional for paired SPP printers.
-        if(Build.VERSION.SDK_INT<31 ||
+change(PRINTER, "BluetoothDevice d=a.getRemoteDevice(mac);a.cancelDiscovery();", """BluetoothDevice d=a.getRemoteDevice(mac);
+        // Android 12+ requires BLUETOOTH_SCAN for cancelDiscovery().
+        // Connecting to a previously paired SPP printer needs CONNECT but not scanning.
+        // Never throw a SecurityException just because scan permission was declined.
+        if(Build.VERSION.SDK_INT < 31 ||
                 activity.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN)==PackageManager.PERMISSION_GRANTED){
-            try { a.cancelDiscovery(); } catch(SecurityException ignored) { /* optional */ }
+            try { a.cancelDiscovery(); } catch(SecurityException ignored) { /* Optional optimization */ }
         }""")
 
 change(JAVA, '    private Uri capturedMediaUri;', """
@@ -43,13 +43,13 @@ change(JAVA, '    private Uri capturedMediaUri;', """
 change(JAVA,
        'Ui.add(body,Ui.secondary(this,"Scan Foto Tanpa Barcode",()->choosePhoto("scan-sale",0)),7);',
        """Ui.add(body,Ui.secondary(this,"Scan Foto Tanpa Barcode",()->choosePhoto("scan-sale",0)),7);
-        Ui.add(body,caption("Foto cocok kuat akan otomatis menambah 1 barang ke keranjang. Jika belum pasti, pilih kandidat hasil scan."),7);""")
+        Ui.add(body,caption("Foto yang cocok kuat akan otomatis menambah 1 barang ke keranjang. Jika belum pasti, pilih dari kandidat hasil scan."),7);""")
 
 change(JAVA, '    private void addToCartDialog(StoreDb.Product p){', """
-    // One stock-checked path for auto-matches and user-confirmed photo matches.
+    // Shared stock-aware path for automatic and manual photo scan choices.
     private void addScannedItem(long productId){
         StoreDb.Product fresh=db.product(productId);
-        if(fresh==null)throw new IllegalArgumentException("Produk tidak ditemukan");
+        if(fresh==null)throw new IllegalArgumentException("Produk sudah tidak ditemukan");
         double existing=cart.containsKey(fresh.id)?cart.get(fresh.id).qty:0;
         if(existing+1 > fresh.stock+0.000001)
             throw new IllegalArgumentException("Stok "+fresh.name+" tidak cukup untuk menambah 1 "+fresh.unit);
@@ -71,16 +71,17 @@ change(JAVA, """        }else if("scan-sale".equals(photoPurpose)){
             List<StoreDb.Product> candidates=ImageMatcher.ranked(db.products(""),hash);
             if(candidates.isEmpty()){
                 new AlertDialog.Builder(this).setTitle("Belum ada foto referensi")
-                    .setMessage("Daftarkan foto barang melalui Produk > Edit > Ambil Foto Referensi, lalu scan ulang.")
-                    .setPositiveButton("Buka Kasir",(d,w)->showPOS())
-                    .setNegativeButton("Tutup",null).show();
+                        .setMessage("Daftarkan foto barang terlebih dahulu lewat menu Produk > Edit > Ambil Foto Referensi. Setelah itu coba scan lagi.")
+                        .setPositiveButton("Buka Kasir",(d,w)->showPOS())
+                        .setNegativeButton("Tutup",null).show();
                 return;
             }
             StoreDb.Product first=candidates.get(0);
-            int best=ImageMatcher.distance(first.photoHash,hash);
-            int next=candidates.size()>1?ImageMatcher.distance(candidates.get(1).photoHash,hash):64;
-            // Never silently sell a low-confidence or ambiguous photo match.
-            if(best<=8 && next-best>=5){
+            int bestDistance=ImageMatcher.distance(first.photoHash,hash);
+            int nextDistance=candidates.size()>1?ImageMatcher.distance(candidates.get(1).photoHash,hash):64;
+            // Conservative auto-add: visual hash must be close AND clearly beat next match.
+            // A single average hash is not a reliable universal product classifier.
+            if(bestDistance<=8 && nextDistance-bestDistance>=5){
                 safe(()->addScannedItem(first.id));
                 return;
             }
@@ -93,9 +94,9 @@ change(JAVA, """        }else if("scan-sale".equals(photoPurpose)){
                 names[i]=p.name+" · "+quality+" · "+money(p.price)+" (+1)";
             }
             new AlertDialog.Builder(this).setTitle("Hasil scan belum pasti")
-                .setMessage("Pilih barang yang benar agar otomatis +1 ke keranjang. Batalkan jika tidak ada yang cocok.")
-                .setItems(names,(d,index)->safe(()->addScannedItem(shown.get(index).id)))
-                .setNegativeButton("Batal",null).show();
+                    .setMessage("Pilih produk yang benar untuk langsung menambah 1 ke keranjang. Bila tidak ada yang cocok, batalkan dan gunakan daftar produk.")
+                    .setItems(names,(d,index)->safe(()->addScannedItem(shown.get(index).id)))
+                    .setNegativeButton("Batal",null).show();
         }""")
 
 change(JAVA, """        Ui.add(c,Ui.secondary(this,"Pilih Printer Bluetooth yang sudah Pairing",()->{
@@ -135,7 +136,7 @@ change(JAVA, """        if(request==REQ_BT){
                 if(resumePrint!=null)printBytes(resumePrint);
             }else{
                 new AlertDialog.Builder(this).setTitle("Izin Bluetooth diperlukan")
-                    .setMessage("Beri izin Perangkat di Sekitar (Nearby Devices) pada Setelan HP > Aplikasi > Toko Pintar POS 2.1.")
+                    .setMessage("Aktifkan Perangkat di Sekitar / Nearby Devices pada Pengaturan > Aplikasi > Toko Pintar POS 2.1, lalu coba cetak ulang.")
                     .setPositiveButton("OK",null).show();
             }
         }""")
