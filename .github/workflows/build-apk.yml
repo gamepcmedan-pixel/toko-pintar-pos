@@ -1,4 +1,4 @@
-name: Build APK Toko Pintar POS Native v2.2
+name: Build APK Toko Pintar POS Native v2.3 Struk RPP02N
 on:
   push:
     branches: [main]
@@ -77,6 +77,15 @@ jobs:
           }
           GRADLE
 
+      - name: Fix RPP02N 58mm thermal receipt layout
+        run: python3 scripts/apply-receipt-v23.py
+
+      - name: Verify ESC/POS linefeed regression
+        run: |
+          grep -Fq 'o.write(0x0A)' app/src/main/java/com/tokopintar/nativepos/ReceiptFormatter.java
+          grep -Fq '58 mm RPP02N (24 karakter)' app/src/main/java/com/tokopintar/nativepos/MainActivity.java
+          grep -Fq 'com.tokopintar.nativepos.v23' app/build.gradle
+
       - name: Compile genuine APK
         run: gradle --no-daemon --stacktrace :app:assembleDebug
 
@@ -84,6 +93,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Toko-Pintar-POS-Native-v2.2-Debug-APK
+          name: Toko-Pintar-POS-Native-v2.3-Struk-FIX-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
