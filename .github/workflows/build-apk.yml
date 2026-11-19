@@ -56,6 +56,14 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Align Kotlin dependencies required by offline OCR
+        run: |
+          cat >> app/build.gradle <<'GRADLE'
+          configurations.configureEach {
+              resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22', 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+          }
+          GRADLE
+
       - name: Compile genuine APK
         run: gradle --no-daemon --stacktrace :app:assembleDebug
 
