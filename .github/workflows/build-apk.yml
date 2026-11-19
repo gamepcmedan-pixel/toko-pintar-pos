@@ -82,7 +82,7 @@ jobs:
 
       - name: Verify ESC/POS linefeed regression
         run: |
-          grep -Fq 'o.write(0x0A)' app/src/main/java/com/tokopintar/nativepos/ReceiptFormatter.java
+          grep -Fq 'out.write(0x0A)' app/src/main/java/com/tokopintar/nativepos/ReceiptFormatter.java
           grep -Fq '58 mm RPP02N (24 karakter)' app/src/main/java/com/tokopintar/nativepos/MainActivity.java
           grep -Fq 'com.tokopintar.nativepos.v23' app/build.gradle
 
