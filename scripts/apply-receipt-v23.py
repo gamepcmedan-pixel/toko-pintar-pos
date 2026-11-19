@@ -28,6 +28,6 @@ for before,after in [
   if g.count(before)!=1:raise RuntimeError(f'Bad Gradle anchor: {before}')
   g=g.replace(before,after)
 gradle.write_text(g,encoding='utf-8')
-assert 'o.write(0x0A)' in fmt.read_text()
+assert 'out.write(0x0A)' in fmt.read_text()
 assert '58 mm RPP02N (24 karakter)' in main.read_text()
 print('Receipt fix applied: LF 0x0A, 24-column RPP02N, 32/48 options, no cutter')
