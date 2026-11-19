@@ -56,6 +56,19 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Normalize OCR source newline
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("app/src/main/java/com/tokopintar/nativepos/MainActivity.java")
+          s=p.read_text()
+          broken="recognized.trim().replace(" + chr(39) + chr(10) + chr(39) + ",' ')"
+          fixed="recognized.trim().replace((char)10, ' ')"
+          if broken not in s:
+              raise RuntimeError("Expected OCR newline source not found")
+          p.write_text(s.replace(broken,fixed))
+          PY
+
       - name: Align Kotlin dependencies required by offline OCR
         run: |
           cat >> app/build.gradle <<'GRADLE'
